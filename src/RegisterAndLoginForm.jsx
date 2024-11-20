@@ -1,4 +1,5 @@
 import { useContext, useState } from "react";
+import axios from "axios";
 import { UserContext } from "./UserContext";
 import { Loader2 } from "lucide-react";
 
@@ -26,31 +27,14 @@ export default function RegisterAndLoginForm() {
     const url = isLoginOrRegister === "register" ? "register" : "login";
     try {
       setIsLoading(true);
-      setError(""); 
       const { data } = await axios.post(url, { username, password });
       setLoggedInUsername(username);
       setId(data.id);
-    } catch (error) {
-     
-      if (error.response) {
-        switch (error.response.status) {
-          case 401:
-            setError("Invalid username or password");
-            break;
-          case 404:
-            setError("User not found");
-            break;
-          case 409:
-            setError("Username already exists");
-            break;
-          default:
-            setError("An error occurred. Please try again later.");
-        }
-      } else {
-        setError("Network error. Please check your connection.");
-      }
-    } finally {
       setIsLoading(false);
+    } catch (error) {
+      setError(
+        error.response.data.message || "An error occurred. Please try again."
+      );
     }
   }
 
@@ -65,52 +49,44 @@ export default function RegisterAndLoginForm() {
             Welcome to Learniee
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Please {isLoginOrRegister === "register" ? "create an account" : "sign in to your account"}
+            Please sign in to your account
           </p>
         </div>
-        
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 flex items-center">
-            <span className="flex-1">{error}</span>
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
           </div>
         )}
-        
         <input
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           placeholder="Username"
-          disabled={isLoading}
-          className="block w-full rounded-md p-3 mb-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+          className="block w-full rounded-md p-3 mb-4 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
         />
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Password"
-          disabled={isLoading}
-          className="block w-full rounded-md p-3 mb-6 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+          className="block w-full rounded-md p-3 mb-6 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
         />
-        <button 
-          disabled={isLoading}
-          className="bg-yellow-400 hover:bg-yellow-300 text-gray-800 font-bold py-3 px-4 rounded-full w-full transition duration-150 ease-in-out shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-        >
+        <button className="bg-yellow-400 hover:bg-yellow-300 text-gray-800 font-bold py-3 px-4 rounded-full w-full transition duration-150 ease-in-out shadow-md flex items-center justify-center">
           {isLoading ? (
             <>
               <Loader2 className="animate-spin h-5 w-5 mr-2" />
-              {isLoginOrRegister === "register" ? "Registering..." : "Logging in..."}
+              <span>Loading...</span>
             </>
           ) : (
             isLoginOrRegister === "register" ? "Register" : "Login"
           )}
         </button>
-        
-        <div className="text-center mt-4">
-          {isLoginOrRegister === "register" ? (
-            <div className="text-sm text-gray-600">
-              Already a member?{" "}
+        <div className="text-center mt-2">
+          {isLoginOrRegister === "register" && (
+            <div>
+              Already a member?
               <button
-                className="text-blue-600 hover:text-blue-800 font-medium"
+                className="ml-1"
                 onClick={(e) => {
                   e.preventDefault();
                   setIsLoginOrRegister("login");
@@ -120,11 +96,12 @@ export default function RegisterAndLoginForm() {
                 Login here
               </button>
             </div>
-          ) : (
-            <div className="text-sm text-gray-600">
-              Don't have an account?{" "}
+          )}
+          {isLoginOrRegister === "login" && (
+            <div>
+              Don't have an account?
               <button
-                className="text-blue-600 hover:text-blue-800 font-medium"
+                className="ml-1"
                 onClick={(e) => {
                   e.preventDefault();
                   setIsLoginOrRegister("register");
